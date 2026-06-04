@@ -1,41 +1,19 @@
 {
-  "mesas": [
+  "mesas": [],
+  "contador_mesas": 1,
+  "itemsCardapio": [
     {
       "id": 1,
-      "nome": "001"
-    },
-    {
-      "id": 2,
-      "nome": ""
-    },
-    {
-      "id": 3,
-      "nome": "002"
+      "nome": "Coxinha de frango",
+      "preco": 10,
+      "tipo": "Petiscos"
     },
     {
       "id": 4,
-      "nome": "002"
-    },
-    {
-      "id": 5,
-      "nome": "002"
-    },
-    {
-      "id": 6,
-      "nome": "3"
-    },
-    {
-      "id": 7,
-      "nome": "3"
-    },
-    {
-      "id": 8,
-      "nome": "3"
-    },
-    {
-      "id": 9,
-      "nome": "2323"
+      "nome": "Camarao a grega",
+      "preco": 155,
+      "tipo": "Massas"
     }
   ],
-  "contador_mesas": 10
+  "contador_items_cardapio": 5
 }
