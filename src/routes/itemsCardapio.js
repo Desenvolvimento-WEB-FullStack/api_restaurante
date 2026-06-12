@@ -36,6 +36,11 @@ routesItemsCardapio.get("/items-cardapio", (request, response) => {
   response.send(ItemCardapio.listarTodos());
 });
 
+routesItemsCardapio.get("/items-cardapio/:id", (request, response) => {
+  const id = Number(request.params.id);
+  response.send(ItemCardapio.pegarUm(id));
+});
+
 routesItemsCardapio.post("/items-cardapio", async (request, response) => {
   const dados = request.body;
 

@@ -26,6 +26,11 @@ class ItemCardapio {
     return db.data.itemsCardapio;
   }
 
+  static pegarUm(id) {
+    const itemEncontrado = db.data.itemsCardapio.find((item) => item.id === id);
+    return itemEncontrado;
+  }
+
   static verificarExistencia(id) {
     const existe = db.data.itemsCardapio.some((item) => item.id === id);
     return existe;

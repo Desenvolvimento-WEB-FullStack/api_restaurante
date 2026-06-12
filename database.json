@@ -3,17 +3,23 @@
   "contador_mesas": 1,
   "itemsCardapio": [
     {
-      "id": 1,
-      "nome": "Coxinha de frango",
-      "preco": 10,
-      "tipo": "Petiscos"
+      "id": 23,
+      "nome": "Picanha 123",
+      "preco": 100333,
+      "tipo": "massas"
     },
     {
-      "id": 4,
-      "nome": "Camarao a grega",
-      "preco": 155,
-      "tipo": "Massas"
+      "id": 24,
+      "nome": "pudim",
+      "preco": 45,
+      "tipo": "petiscos"
+    },
+    {
+      "id": 26,
+      "nome": "teste",
+      "preco": 233,
+      "tipo": "massas"
     }
   ],
-  "contador_items_cardapio": 5
+  "contador_items_cardapio": 27
 }
