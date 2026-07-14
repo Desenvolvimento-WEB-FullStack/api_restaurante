@@ -1,7 +1,7 @@
 import { DataSource } from "typeorm";
 import { MesaEntity } from "../entidades/Mesa.js";
 import { ItemCardapioEntity } from "../entidades/ItemCardapio.js";
-import { PedidoEntity } from "../entidades/Pedido.js";
+import { ChefEntity } from "../entidades/Chef.js";
 
 export const AppDataSource = new DataSource({
   type: "postgres",
@@ -12,5 +12,5 @@ export const AppDataSource = new DataSource({
   database: "restaurante",
   synchronize: false,
   logging: true,
-  entities: [MesaEntity, ItemCardapioEntity, PedidoEntity],
+  entities: [MesaEntity, ItemCardapioEntity, ChefEntity],
 });

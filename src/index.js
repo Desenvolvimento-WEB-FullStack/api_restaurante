@@ -7,6 +7,7 @@ import routesItemsCardapio from "./routes/itemsCardapio.js";
 import cors from "cors";
 import { AppDataSource } from "./config/database_postgres.js";
 import routesPedidos from "./routes/pedidos.js";
+import chefsRoutes from "./routes/chefs.routes.js";
 
 const app = express();
 app.use(express.json()); // habilita o servidor para reconhecer formato JSON
@@ -15,6 +16,7 @@ app.use(cors());
 app.use(routesMesas);
 app.use(routesItemsCardapio);
 app.use(routesPedidos);
+app.use(chefsRoutes);
 
 try {
   await AppDataSource.initialize();
