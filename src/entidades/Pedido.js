@@ -18,5 +18,41 @@ export const PedidoEntity = new EntitySchema({
       type: "int",
       nullable: false,
     },
+    fechado: {
+      type: "boolean",
+      nullable: false,
+      default: false,
+    },
+    data: {
+      type: "date",
+      nullable: false,
+    },
+    total: {
+      type: "decimal",
+      precision: 10,
+      scale: 2,
+      nullable: true,
+    },
+    criado_em: {
+      type: "timestamp with time zone",
+      nullable: false,
+      default: () => "CURRENT_TIMESTAMP",
+    },
+    atualizado_em: {
+      type: "timestamp with time zone",
+      nullable: false,
+      default: () => "CURRENT_TIMESTAMP",
+    },
+  },
+  relations: {
+    mesa: {
+      type: "many-to-one",
+      target: "Mesa",
+      joinColumn: {
+        name: "mesa_id",
+        referencedColumnName: "id",
+      },
+      nullable: false,
+    },
   },
 });

@@ -4,7 +4,6 @@ import {
   CREATED_SUCCESS_REQUEST,
   NOT_FOUND_ERROR,
 } from "../constants/server.js";
-import ItemCardapio from "../classes/ItemCardapio.js";
 
 import { AppDataSource } from "../config/database_postgres.js";
 import { ItemCardapioEntity } from "../entidades/ItemCardapio.js";
