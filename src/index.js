@@ -6,6 +6,7 @@ import routesItemsCardapio from "./routes/itemsCardapio.js";
 import routesPedidos from "./routes/pedidos.routes.js";
 import chefsRoutes from "./routes/chefs.routes.js";
 import agendaChefs from "./routes/agendaChefs.routes.js";
+import itemsPedidosRoutes from "./routes/itemsPedidos.routes.js";
 
 import { PORTA } from "./constants/server.js";
 import { AppDataSource } from "./config/database_postgres.js";
@@ -19,6 +20,7 @@ app.use(routesItemsCardapio);
 app.use(routesPedidos);
 app.use(chefsRoutes);
 app.use(agendaChefs);
+app.use(itemsPedidosRoutes);
 
 try {
   await AppDataSource.initialize();

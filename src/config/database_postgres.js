@@ -4,6 +4,7 @@ import { ItemCardapioEntity } from "../entidades/ItemCardapio.js";
 import { ChefEntity } from "../entidades/Chef.js";
 import { PedidoEntity } from "../entidades/Pedido.js";
 import { AgendaChefEntity } from "../entidades/AgendaChef.js";
+import { ItemPedidoEntity } from "../entidades/ItemPedido.js";
 
 export const AppDataSource = new DataSource({
   type: "postgres",
@@ -20,5 +21,6 @@ export const AppDataSource = new DataSource({
     ChefEntity,
     PedidoEntity,
     AgendaChefEntity,
+    ItemPedidoEntity,
   ],
 });

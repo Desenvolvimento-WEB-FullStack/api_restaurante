@@ -12,6 +12,26 @@ const pedidosRoutes = new Router();
 const pedidoRepository = AppDataSource.getRepository(PedidoEntity);
 const mesaRepository = AppDataSource.getRepository(MesaEntity);
 
+pedidosRoutes.put("/pedidos/:id/fechar", async (request, response) => {
+  const idPedido = request.params.id;
+
+  // Somar todos os items do pedido
+
+  const resultado = await AppDataSource.createQueryBuilder()
+    .select("SUM(total_item)", "total")
+    .from((subQuery) => {
+      return subQuery
+        .select("ic.nome", "nome")
+        .addSelect("ip.quantidade * ic.preco", "total_item")
+        .from("items_pedidos", "ip")
+        .innerJoin("items_cardapio", "ic", "ip.item_cardapio_id = ic.id")
+        .where("ip.pedido_id = :pedidoId", { pedidoId: idPedido });
+    }, "pedido_items")
+    .getRawOne();
+
+  response.send(resultado);
+});
+
 pedidosRoutes.post("/pedidos", async (request, response) => {
   try {
     const dados = request.body;
