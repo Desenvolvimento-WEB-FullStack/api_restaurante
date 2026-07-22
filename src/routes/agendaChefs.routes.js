@@ -1,30 +1,29 @@
-import { response, Router } from "express";
+import { Router } from "express";
 import { AppDataSource } from "../config/database_postgres.js";
 import {
   CREATED_SUCCESS_REQUEST,
   INTERNAL_SERVER_ERROR,
 } from "../constants/server.js";
 import { AgendaChefEntity } from "../entidades/AgendaChef.js";
+import { asyncHandler } from "../middlewares/asyncHandler.js";
 
 const agendaChefs = new Router();
 const agendaChefRepository = AppDataSource.getRepository(AgendaChefEntity);
 
-agendaChefs.get("/agenda-chefs", async (request, response) => {
-  try {
+agendaChefs.get(
+  "/agenda-chefs",
+  asyncHandler(async (request, response) => {
     const agendas = await agendaChefRepository.find({
       relations: { chef: true },
     });
     response.send(agendas);
-  } catch {
-    response
-      .status(INTERNAL_SERVER_ERROR)
-      .send({ error: "Não foi possível lista as agendas dos chefs" });
-  }
-});
+  }),
+);
 
 // chef_id, semana, mes, dias_semana
-agendaChefs.post("/agenda-chefs", async (request, response) => {
-  try {
+agendaChefs.post(
+  "/agenda-chefs",
+  asyncHandler(async (request, response) => {
     const dados = request.body;
     // validação
 
@@ -40,11 +39,7 @@ agendaChefs.post("/agenda-chefs", async (request, response) => {
       const agendaCriada = await agendaChefRepository.save(dados);
       response.status(CREATED_SUCCESS_REQUEST).send(agendaCriada);
     }
-  } catch {
-    response
-      .status(INTERNAL_SERVER_ERROR)
-      .send({ error: "Não foi possível adicionar agenda ao chef no momento" });
-  }
-});
+  }),
+);
 
 export default agendaChefs;

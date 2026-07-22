@@ -7,33 +7,54 @@ import {
   NOT_FOUND_ERROR,
 } from "../constants/server.js";
 import { MesaEntity } from "../entidades/Mesa.js";
+import { asyncHandler } from "../middlewares/asyncHandler.js";
 
 const pedidosRoutes = new Router();
 const pedidoRepository = AppDataSource.getRepository(PedidoEntity);
 const mesaRepository = AppDataSource.getRepository(MesaEntity);
 
-pedidosRoutes.put("/pedidos/:id/fechar", async (request, response) => {
-  const idPedido = request.params.id;
+pedidosRoutes.put(
+  "/pedidos/:id/fechar",
+  asyncHandler(async (request, response) => {
+    const idPedido = request.params.id;
 
-  // Somar todos os items do pedido
+    const pedidoEncontrado = await pedidoRepository.findOneBy({ id: idPedido });
 
-  const resultado = await AppDataSource.createQueryBuilder()
-    .select("SUM(total_item)", "total")
-    .from((subQuery) => {
-      return subQuery
-        .select("ic.nome", "nome")
-        .addSelect("ip.quantidade * ic.preco", "total_item")
-        .from("items_pedidos", "ip")
-        .innerJoin("items_cardapio", "ic", "ip.item_cardapio_id = ic.id")
-        .where("ip.pedido_id = :pedidoId", { pedidoId: idPedido });
-    }, "pedido_items")
-    .getRawOne();
+    if (!pedidoEncontrado) {
+      response.status(NOT_FOUND_ERROR).send({ error: "Pedido nao encontrado" });
+    } else {
+      // Somar todos os items do pedido
+      const resultado = await AppDataSource.createQueryBuilder()
+        .select("SUM(total_item)", "total")
+        .from((subQuery) => {
+          return subQuery
+            .select("ic.nome", "nome")
+            .addSelect("ip.quantidade * ic.preco", "total_item")
+            .from("items_pedidos", "ip")
+            .innerJoin("items_cardapio", "ic", "ip.item_cardapio_id = ic.id")
+            .where("ip.pedido_id = :pedidoId", { pedidoId: idPedido });
+        }, "pedido_items")
+        .getRawOne();
 
-  response.send(resultado);
-});
+      // Ir na tabela de pedidos e atualizar a coluna total e fechado para true
+      await pedidoRepository.update(idPedido, {
+        fechado: true,
+        total: resultado.total || 0, // se valor for null, assume valor 0 para salvar no banco
+      });
 
-pedidosRoutes.post("/pedidos", async (request, response) => {
-  try {
+      // Ir na tabela de mesas e atualiza e liberar mesa(reservado = false)
+      await mesaRepository.update(pedidoEncontrado.mesa_id, {
+        reservado: false,
+      });
+
+      response.send(resultado);
+    }
+  }),
+);
+
+pedidosRoutes.post(
+  "/pedidos",
+  asyncHandler(async (request, response) => {
     const dados = request.body;
     /* Validacao AQUI */
     const mesa = await mesaRepository.findOneBy({ id: dados.mesa_id });
@@ -46,33 +67,25 @@ pedidosRoutes.post("/pedidos", async (request, response) => {
 
       response.status(CREATED_SUCCESS_REQUEST).send(novoPedido);
     }
-  } catch (error) {
-    console.log(error.message);
-    response
-      .status(INTERNAL_SERVER_ERROR)
-      .send({ error: "Não foi possivel cadastrar um pedido no momento " });
-  }
-});
+  }),
+);
 
 /* Fazer uma rota que lista todos pedidos */
-pedidosRoutes.get("/pedidos", async (request, response) => {
-  try {
+pedidosRoutes.get(
+  "/pedidos",
+  asyncHandler(async (request, response) => {
     const todosPedidos = await pedidoRepository.find({
       relations: { mesa: true }, // faz o join com tabela mesas
     });
     response.send(todosPedidos);
-  } catch (error) {
-    console.log(error);
-    response
-      .status(INTERNAL_SERVER_ERROR)
-      .send({ error: "Nao foi possivel listar todos os pedidos no momento" });
-  }
-});
+  }),
+);
 
 /* Fazer uma rota que lista que um pedido pelo ID */
 
-pedidosRoutes.get("/pedidos/:id", async (request, response) => {
-  try {
+pedidosRoutes.get(
+  "/pedidos/:id",
+  asyncHandler(async (request, response) => {
     const id = request.params.id;
 
     const pedidoEncontrado = await pedidoRepository.findOne({
@@ -87,13 +100,8 @@ pedidosRoutes.get("/pedidos/:id", async (request, response) => {
         .status(NOT_FOUND_ERROR)
         .send({ error: "Nao foi encontrado pedido com esse Id" });
     }
-  } catch (error) {
-    console.log(error);
-    response.status(INTERNAL_SERVER_ERROR).send({
-      error: "Nao foi possivel listar os dados desse pedido no momento",
-    });
-  }
-});
+  }),
+);
 
 export default pedidosRoutes;
 
