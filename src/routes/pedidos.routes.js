@@ -8,6 +8,7 @@ import {
 } from "../constants/server.js";
 import { MesaEntity } from "../entidades/Mesa.js";
 import { asyncHandler } from "../middlewares/asyncHandler.js";
+import { verifyIdExistsHandler } from "../middlewares/verifyIdExistsHandler.js";
 
 const pedidosRoutes = new Router();
 const pedidoRepository = AppDataSource.getRepository(PedidoEntity);
@@ -15,40 +16,36 @@ const mesaRepository = AppDataSource.getRepository(MesaEntity);
 
 pedidosRoutes.put(
   "/pedidos/:id/fechar",
+  verifyIdExistsHandler(PedidoEntity, "Pedido"),
   asyncHandler(async (request, response) => {
-    const idPedido = request.params.id;
+    const idPedido = Number(request.params.id);
+    const pedidoEncontrado = request.registro;
 
-    const pedidoEncontrado = await pedidoRepository.findOneBy({ id: idPedido });
+    // Somar todos os items do pedido
+    const resultado = await AppDataSource.createQueryBuilder()
+      .select("SUM(total_item)", "total")
+      .from((subQuery) => {
+        return subQuery
+          .select("ic.nome", "nome")
+          .addSelect("ip.quantidade * ic.preco", "total_item")
+          .from("items_pedidos", "ip")
+          .innerJoin("items_cardapio", "ic", "ip.item_cardapio_id = ic.id")
+          .where("ip.pedido_id = :pedidoId", { pedidoId: idPedido });
+      }, "pedido_items")
+      .getRawOne();
 
-    if (!pedidoEncontrado) {
-      response.status(NOT_FOUND_ERROR).send({ error: "Pedido nao encontrado" });
-    } else {
-      // Somar todos os items do pedido
-      const resultado = await AppDataSource.createQueryBuilder()
-        .select("SUM(total_item)", "total")
-        .from((subQuery) => {
-          return subQuery
-            .select("ic.nome", "nome")
-            .addSelect("ip.quantidade * ic.preco", "total_item")
-            .from("items_pedidos", "ip")
-            .innerJoin("items_cardapio", "ic", "ip.item_cardapio_id = ic.id")
-            .where("ip.pedido_id = :pedidoId", { pedidoId: idPedido });
-        }, "pedido_items")
-        .getRawOne();
+    // Ir na tabela de pedidos e atualizar a coluna total e fechado para true
+    await pedidoRepository.update(idPedido, {
+      fechado: true,
+      total: resultado.total || 0, // se valor for null, assume valor 0 para salvar no banco
+    });
 
-      // Ir na tabela de pedidos e atualizar a coluna total e fechado para true
-      await pedidoRepository.update(idPedido, {
-        fechado: true,
-        total: resultado.total || 0, // se valor for null, assume valor 0 para salvar no banco
-      });
+    // Ir na tabela de mesas e atualiza e liberar mesa(reservado = false)
+    await mesaRepository.update(pedidoEncontrado.mesa_id, {
+      reservado: false,
+    });
 
-      // Ir na tabela de mesas e atualiza e liberar mesa(reservado = false)
-      await mesaRepository.update(pedidoEncontrado.mesa_id, {
-        reservado: false,
-      });
-
-      response.send(resultado);
-    }
+    response.send(resultado);
   }),
 );
 
@@ -85,21 +82,21 @@ pedidosRoutes.get(
 
 pedidosRoutes.get(
   "/pedidos/:id",
+  verifyIdExistsHandler(PedidoEntity, "Pedido"),
   asyncHandler(async (request, response) => {
-    const id = request.params.id;
-
     const pedidoEncontrado = await pedidoRepository.findOne({
-      where: { id },
-      relations: { mesa: true }, // faz o join com tabela mesas
+      where: { id: Number(request.params.id) },
+      relations: { mesa: true },
     });
 
-    if (pedidoEncontrado) {
-      response.send(pedidoEncontrado);
-    } else {
+    if (!pedidoEncontrado) {
       response
         .status(NOT_FOUND_ERROR)
         .send({ error: "Nao foi encontrado pedido com esse Id" });
+      return;
     }
+
+    response.send(pedidoEncontrado);
   }),
 );
 

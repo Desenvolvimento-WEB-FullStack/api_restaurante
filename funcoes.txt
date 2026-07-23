@@ -1,0 +1,20 @@
+ADMIN - *
+Cadastrar usuario/permissao
+
+Chef
+ver sua rotina
+cadastrar item cardapio
+
+Gerente
+ cadastrar mesa
+ cadastrar/atualizar items do cardapio
+ Relatorio de pedidos
+ Cadastrar chefs 
+
+ 
+
+GARCOM
+ Criar pedido
+ Incluir items
+ fechar pedido  
+

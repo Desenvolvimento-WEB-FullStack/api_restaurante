@@ -7,6 +7,7 @@ import {
   SUCCESS_WITHOUT_RESPONSE,
 } from "../constants/server.js";
 import { asyncHandler } from "../middlewares/asyncHandler.js";
+import { verifyIdExistsHandler } from "../middlewares/verifyIdExistsHandler.js";
 
 const chefsRoutes = new Router();
 
@@ -35,55 +36,35 @@ chefsRoutes.get(
 
 chefsRoutes.get(
   "/chefs/:id",
+  verifyIdExistsHandler(ChefEntity, "Chef"),
   asyncHandler(async (request, response) => {
-    const id = request.params.id;
-
-    const chefEncontrado = await chefRepository.findOneBy({ id });
-
-    if (chefEncontrado) {
-      response.send(chefEncontrado);
-    } else {
-      response
-        .status(NOT_FOUND_ERROR)
-        .send({ error: "Chef nao encontrado pelo id" });
-    }
+    response.send(request.registro);
   }),
 );
 
 chefsRoutes.put(
   "/chefs/:id",
+  verifyIdExistsHandler(ChefEntity, "Chef"),
   asyncHandler(async (request, response) => {
-    const id = request.params.id;
+    const id = Number(request.params.id);
     const dados = request.body;
 
     // VALIDACAO
 
-    const chefEncontrado = await chefRepository.existsBy({ id });
-
-    if (chefEncontrado) {
-      await chefRepository.update(id, dados);
-      const dadosChefAtualizado = await chefRepository.findOneBy({ id });
-      response.send(dadosChefAtualizado);
-    } else {
-      response
-        .status(NOT_FOUND_ERROR)
-        .send({ error: "Chef nao encontrado pelo id" });
-    }
+    await chefRepository.update(id, dados);
+    const dadosChefAtualizado = await chefRepository.findOneBy({ id });
+    response.send(dadosChefAtualizado);
   }),
 );
 
 chefsRoutes.delete(
   "/chefs/:id",
+  verifyIdExistsHandler(ChefEntity, "Chef"),
   asyncHandler(async (request, response) => {
-    const id = request.params.id;
+    const id = Number(request.params.id);
+    const chefEncontrado = request.registro;
 
-    const chefEncontrado = await chefRepository.findOneBy({ id });
-
-    if (!chefEncontrado) {
-      response
-        .status(NOT_FOUND_ERROR)
-        .send({ error: "Chef nao encontrado pelo id" });
-    } else if (chefEncontrado.faz_sobremesa === true) {
+    if (chefEncontrado.faz_sobremesa === true) {
       response
         .status(409)
         .send({ error: "Chef nao pode ser deletado, pois faz sobremesa" });
