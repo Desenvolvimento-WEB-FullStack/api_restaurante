@@ -13,6 +13,7 @@ import { AppDataSource } from "./config/database_postgres.js";
 import { captureLog } from "./middlewares/captureLog.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import authRoutes from "./routes/auth.routes.js";
+import { validateJwtHandler } from "./middlewares/validateJwtHandler.js";
 
 const app = express();
 app.use(express.json()); // habilita o servidor para reconhecer formato JSON
@@ -21,6 +22,8 @@ app.use(cors());
 app.use(captureLog); // aplicando o middleware de forma global no inicio de cada rota
 
 app.use(authRoutes);
+
+app.use(validateJwtHandler); // aplicar o token em todas as rotas abaixo
 app.use(routesMesas);
 app.use(routesItemsCardapio);
 app.use(routesPedidos);

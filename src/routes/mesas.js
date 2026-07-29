@@ -7,7 +7,7 @@ import {
 import { MesaEntity } from "../entidades/Mesa.js";
 import { AppDataSource } from "../config/database_postgres.js";
 import { asyncHandler } from "../middlewares/asyncHandler.js";
-
+import { validateJwtHandler } from "../middlewares/validateJwtHandler.js";
 const routesMesas = new Router();
 const mesaRepository = AppDataSource.getRepository(MesaEntity);
 
