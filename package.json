@@ -3,7 +3,8 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "start": "nodemon src/index.js"
+    "start": "nodemon src/index.js",
+    "seed:usuarios": "node src/database/seeds/usuarios.seed.js"
   },
   "keywords": [],
   "author": "",

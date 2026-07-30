@@ -14,6 +14,7 @@ import { captureLog } from "./middlewares/captureLog.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import authRoutes from "./routes/auth.routes.js";
 import { validateJwtHandler } from "./middlewares/validateJwtHandler.js";
+import publicRoutes from "./routes/public.routes.js";
 
 const app = express();
 app.use(express.json()); // habilita o servidor para reconhecer formato JSON
@@ -21,9 +22,10 @@ app.use(cors());
 
 app.use(captureLog); // aplicando o middleware de forma global no inicio de cada rota
 
-app.use(authRoutes);
+app.use(publicRoutes);
 
 app.use(validateJwtHandler); // aplicar o token em todas as rotas abaixo
+app.use(authRoutes);
 app.use(routesMesas);
 app.use(routesItemsCardapio);
 app.use(routesPedidos);
