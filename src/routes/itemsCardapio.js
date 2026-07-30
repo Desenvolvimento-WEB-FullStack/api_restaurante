@@ -1,15 +1,20 @@
 import { Router } from "express";
+
 import {
   BAD_REQUEST_ERROR,
   CREATED_SUCCESS_REQUEST,
   NOT_FOUND_ERROR,
 } from "../constants/server.js";
+import { ROLES } from "../constants/roles.js";
 
 import { AppDataSource } from "../config/database_postgres.js";
+
 import { ItemCardapioEntity } from "../entidades/ItemCardapio.js";
+
 import { asyncHandler } from "../middlewares/asyncHandler.js";
 import { verifyIdExistsHandler } from "../middlewares/verifyIdExistsHandler.js";
 import { validateUpdateItemCardapio } from "../middlewares/validations/items_cadarpio/validateUpdateItemCardapio.js";
+import { autorizarHandler } from "../middlewares/autorizarHandler.js";
 
 const routesItemsCardapio = new Router();
 
@@ -17,6 +22,7 @@ const itemCardapioRepository = AppDataSource.getRepository(ItemCardapioEntity);
 
 routesItemsCardapio.put(
   "/items-cardapio/:id",
+  autorizarHandler(ROLES.ADMIN, ROLES.GERENTE),
   verifyIdExistsHandler(ItemCardapioEntity, "Item do cardápio"),
   validateUpdateItemCardapio,
   asyncHandler(async (request, response) => {
@@ -31,6 +37,7 @@ routesItemsCardapio.put(
 
 routesItemsCardapio.delete(
   "/items-cardapio/:id",
+  autorizarHandler(ROLES.ADMIN, ROLES.GERENTE),
   verifyIdExistsHandler(ItemCardapioEntity, "Item do cardápio"),
   asyncHandler(async (request, response) => {
     const idRecebido = Number(request.params.id);
@@ -43,6 +50,7 @@ routesItemsCardapio.delete(
 
 routesItemsCardapio.get(
   "/items-cardapio",
+  autorizarHandler(ROLES.ADMIN, ROLES.GERENTE, ROLES.CHEF, ROLES.GARCOM),
   asyncHandler(async (request, response) => {
     response.send(await itemCardapioRepository.find());
   }),
@@ -50,6 +58,7 @@ routesItemsCardapio.get(
 
 routesItemsCardapio.get(
   "/items-cardapio/:id",
+  autorizarHandler(ROLES.ADMIN, ROLES.GERENTE, ROLES.CHEF, ROLES.GARCOM),
   verifyIdExistsHandler(ItemCardapioEntity, "Item do cardápio"),
   asyncHandler(async (request, response) => {
     response.send(request.registro);
@@ -58,6 +67,7 @@ routesItemsCardapio.get(
 
 routesItemsCardapio.post(
   "/items-cardapio",
+  autorizarHandler(ROLES.ADMIN, ROLES.GERENTE),
   asyncHandler(async (request, response) => {
     const dados = request.body;
 

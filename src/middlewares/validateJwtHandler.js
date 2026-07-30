@@ -15,6 +15,12 @@ export function validateJwtHandler(request, response, next) {
   try {
     const conteudoDoToken = jwt.verify(token, "senai2026");
 
+    // colocando dentro da requisicao o perfil do usuario extraido do token
+    request.usuario = {
+      id: conteudoDoToken.id,
+      role: conteudoDoToken.role,
+    };
+
     next();
   } catch (error) {
     if (error.name === "TokenExpiredError") {

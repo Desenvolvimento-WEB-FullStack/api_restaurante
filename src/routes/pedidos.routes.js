@@ -9,6 +9,8 @@ import {
 import { MesaEntity } from "../entidades/Mesa.js";
 import { asyncHandler } from "../middlewares/asyncHandler.js";
 import { verifyIdExistsHandler } from "../middlewares/verifyIdExistsHandler.js";
+import { autorizarHandler } from "../middlewares/autorizarHandler.js";
+import { ROLES } from "../constants/roles.js";
 
 const pedidosRoutes = new Router();
 const pedidoRepository = AppDataSource.getRepository(PedidoEntity);
@@ -16,6 +18,7 @@ const mesaRepository = AppDataSource.getRepository(MesaEntity);
 
 pedidosRoutes.put(
   "/pedidos/:id/fechar",
+  autorizarHandler(ROLES.GARCOM, ROLES.GERENTE, ROLES.ADMIN),
   verifyIdExistsHandler(PedidoEntity, "Pedido"),
   asyncHandler(async (request, response) => {
     const idPedido = Number(request.params.id);
@@ -51,6 +54,7 @@ pedidosRoutes.put(
 
 pedidosRoutes.post(
   "/pedidos",
+  autorizarHandler(ROLES.GARCOM, ROLES.GERENTE, ROLES.ADMIN),
   asyncHandler(async (request, response) => {
     const dados = request.body;
     /* Validacao AQUI */
@@ -70,6 +74,7 @@ pedidosRoutes.post(
 /* Fazer uma rota que lista todos pedidos */
 pedidosRoutes.get(
   "/pedidos",
+  autorizarHandler(ROLES.GARCOM, ROLES.GERENTE, ROLES.ADMIN, ROLES.CHEF),
   asyncHandler(async (request, response) => {
     const todosPedidos = await pedidoRepository.find({
       relations: { mesa: true }, // faz o join com tabela mesas
@@ -82,6 +87,7 @@ pedidosRoutes.get(
 
 pedidosRoutes.get(
   "/pedidos/:id",
+  autorizarHandler(ROLES.GARCOM, ROLES.GERENTE, ROLES.ADMIN, ROLES.CHEF),
   verifyIdExistsHandler(PedidoEntity, "Pedido"),
   asyncHandler(async (request, response) => {
     const pedidoEncontrado = await pedidoRepository.findOne({
@@ -101,5 +107,3 @@ pedidosRoutes.get(
 );
 
 export default pedidosRoutes;
-
-/* Uma rota POST para /pedidos que receba mesa_id, nome_cliente e data */

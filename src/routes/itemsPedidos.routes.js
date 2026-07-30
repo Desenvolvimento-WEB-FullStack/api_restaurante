@@ -10,6 +10,8 @@ import {
   NOT_FOUND_ERROR,
 } from "../constants/server.js";
 import { asyncHandler } from "../middlewares/asyncHandler.js";
+import { autorizarHandler } from "../middlewares/autorizarHandler.js";
+import { ROLES } from "../constants/roles.js";
 
 const itemsPedidosRoutes = new Router();
 
@@ -19,6 +21,7 @@ const itemCardapioRepository = AppDataSource.getRepository(ItemCardapioEntity);
 
 itemsPedidosRoutes.post(
   "/items-pedidos",
+  autorizarHandler(ROLES.ADMIN, ROLES.GERENTE, ROLES.GARCOM),
   asyncHandler(async (request, response) => {
     const dados = request.body;
 
