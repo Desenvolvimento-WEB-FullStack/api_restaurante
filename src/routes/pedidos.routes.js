@@ -3,7 +3,6 @@ import { AppDataSource } from "../config/database_postgres.js";
 import { PedidoEntity } from "../entidades/Pedido.js";
 import {
   CREATED_SUCCESS_REQUEST,
-  INTERNAL_SERVER_ERROR,
   NOT_FOUND_ERROR,
 } from "../constants/server.js";
 import { MesaEntity } from "../entidades/Mesa.js";
@@ -92,7 +91,7 @@ pedidosRoutes.get(
   asyncHandler(async (request, response) => {
     const pedidoEncontrado = await pedidoRepository.findOne({
       where: { id: Number(request.params.id) },
-      relations: { mesa: true },
+      relations: { mesa: true, items: { itemCardapio: true } },
     });
 
     if (!pedidoEncontrado) {

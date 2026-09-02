@@ -20,7 +20,21 @@ routesMesas.get(
   "/mesas",
   autorizarHandler(ROLES.ADMIN, ROLES.GARCOM, ROLES.GERENTE),
   asyncHandler(async (request, response) => {
-    response.send(await mesaRepository.find());
+    const mesas = await mesaRepository
+      .createQueryBuilder("mesa")
+      .leftJoin("mesa.pedido", "pedido", "pedido.fechado = false")
+      .select([
+        "mesa.id AS id",
+        "mesa.nome AS nome",
+        "mesa.reservado AS reservado",
+        "mesa.quantidade_lugares AS quantidade_lugares",
+        "mesa.criado_em AS criado_em",
+        "mesa.atualizado_em AS atualizado_em",
+        "pedido.id AS pedido_atual_id",
+      ])
+      .getRawMany();
+
+    response.send(mesas);
   }),
 );
 

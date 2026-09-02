@@ -34,4 +34,11 @@ export const MesaEntity = new EntitySchema({
       default: () => "CURRENT_TIMESTAMP",
     },
   },
+  relations: {
+    pedido: {
+      type: "one-to-many",
+      target: "Pedido",
+      inverseSide: "mesa",
+    },
+  },
 });

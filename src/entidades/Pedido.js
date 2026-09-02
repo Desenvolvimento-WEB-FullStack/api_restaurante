@@ -54,5 +54,10 @@ export const PedidoEntity = new EntitySchema({
       },
       nullable: false,
     },
+    items: {
+      type: "one-to-many",
+      target: "ItemPedido",
+      inverseSide: "pedido",
+    },
   },
 });
