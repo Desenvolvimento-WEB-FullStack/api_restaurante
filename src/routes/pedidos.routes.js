@@ -101,7 +101,13 @@ pedidosRoutes.get(
       return;
     }
 
-    response.send(pedidoEncontrado);
+    const subTotal = pedidoEncontrado.items.reduce((acc, currentItem) => {
+      const subTotal =
+        Number(currentItem.itemCardapio.preco) * currentItem.quantidade;
+      return subTotal + acc;
+    }, 0);
+
+    response.send({ ...pedidoEncontrado, subTotal });
   }),
 );
 
