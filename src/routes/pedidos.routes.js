@@ -76,7 +76,7 @@ pedidosRoutes.get(
   autorizarHandler(ROLES.GARCOM, ROLES.GERENTE, ROLES.ADMIN, ROLES.CHEF),
   asyncHandler(async (request, response) => {
     const todosPedidos = await pedidoRepository.find({
-      relations: { mesa: true }, // faz o join com tabela mesas
+      relations: { mesa: true, items: { itemCardapio: true } },
     });
     response.send(todosPedidos);
   }),
