@@ -40,7 +40,7 @@ publicRoutes.post("/auth/login", async (request, response) => {
   if (senhaCorreta) {
     const tokenUsuario = jwt.sign(
       { id: usuario.id, role: usuario.role },
-      "senai2026",
+      process.env.JWT_SECRET || "senai2026",
       {
         expiresIn: "24h",
       },

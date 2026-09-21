@@ -87,3 +87,19 @@ ALTER TABLE
     "items_pedidos" ADD CONSTRAINT "items_pedidos_pedido_id_foreign" FOREIGN KEY("pedido_id") REFERENCES "pedidos"("id");
 ALTER TABLE
     "pedidos" ADD CONSTRAINT "pedidos_mesa_id_foreign" FOREIGN KEY("mesa_id") REFERENCES "mesas"("id");
+CREATE TABLE "usuarios"(
+    "id" SERIAL NOT NULL,
+    "nome" VARCHAR(150) NOT NULL,
+    "email" VARCHAR(150) NOT NULL,
+    "senha" VARCHAR(150) NOT NULL,
+    "role" VARCHAR(20) CHECK
+        ("role" IN('admin', 'chef', 'gerente', 'garcom')) NOT NULL,
+        "criado_em" TIMESTAMP(0)
+    WITH
+        TIME zone NOT NULL DEFAULT NOW(), "atualizado_em" TIMESTAMP(0)
+    WITH
+        TIME zone NOT NULL DEFAULT NOW());
+ALTER TABLE
+    "usuarios" ADD PRIMARY KEY("id");
+ALTER TABLE
+    "usuarios" ADD CONSTRAINT "usuarios_email_unique" UNIQUE("email");

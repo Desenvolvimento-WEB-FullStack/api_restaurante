@@ -1,4 +1,4 @@
-export const PORTA = 8888;
+export const PORTA = Number(process.env.PORT) || 8888;
 
 export const SUCCESS_REQUEST = 200; // SUCESSO
 export const CREATED_SUCCESS_REQUEST = 201; // CRIADO COM SUCESSO
