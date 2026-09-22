@@ -11,11 +11,11 @@ import { UsuarioEntity } from "../entidades/Usuario.js";
 
 export const AppDataSource = new DataSource({
   type: "postgres",
-  host: process.env.DB_HOST,
-  port: Number(process.env.DB_PORT),
-  username: process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
+  host: "localhost",
+  port: 5432,
+  username: "postgres",
+  password: "vRJlp9IteelpIqt4wQVeKxiUQJ7rC0gKaYXGt8bJsBK8dXlGs1C4jSwpM41hKKHQ",
+  database: "restaurante",
   synchronize: false,
   logging: true,
   entities: [
