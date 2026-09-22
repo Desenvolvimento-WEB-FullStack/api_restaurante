@@ -9,7 +9,7 @@ import { UsuarioEntity } from "../entidades/Usuario.js";
 
 export const AppDataSource = new DataSource({
   type: "postgres",
-  host: "localhost",
+  host: "2.25.233.101",
   port: 5432,
   username: "postgres",
   password: "vRJlp9IteelpIqt4wQVeKxiUQJ7rC0gKaYXGt8bJsBK8dXlGs1C4jSwpM41hKKHQ",
