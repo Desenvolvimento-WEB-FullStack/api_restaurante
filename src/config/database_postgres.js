@@ -1,5 +1,3 @@
-import "dotenv/config";
-
 import { DataSource } from "typeorm";
 import { MesaEntity } from "../entidades/Mesa.js";
 import { ItemCardapioEntity } from "../entidades/ItemCardapio.js";
