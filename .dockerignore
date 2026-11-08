@@ -1,0 +1,7 @@
+# copiar para api_restaurante/.dockerignore
+node_modules
+.git
+.env
+*.md
+Dockerfile*
+.dockerignore
