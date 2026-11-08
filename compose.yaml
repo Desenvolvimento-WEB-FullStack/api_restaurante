@@ -1,0 +1,109 @@
+# Fica na RAIZ do repositório da API (cada repositório é independente):
+#   api_restaurante/
+#   ├── compose.yaml   <- este arquivo
+#   ├── .env           <- o mesmo .env da etapa 2 (npm start)
+#   ├── Dockerfile
+#   └── src/
+#
+# O front é outro repositório: tem só o Dockerfile dele (etapa 4).
+# Em produção (Coolify) este arquivo NÃO é usado: banco, API e front
+# viram três recursos separados (ver etapa 6). Ele serve para desenvolvimento.
+#
+# Subir:       docker compose up -d --build
+# Criar admin: docker compose exec api node src/database/seeds/usuarios.seed.js
+#
+# As variáveis ${...} abaixo são lidas automaticamente do arquivo .env
+# que está na mesma pasta deste compose.yaml.
+
+# Nome do "projeto" no Docker: prefixa containers, redes e volumes (ex.: restaurante-api-1)
+name: restaurante
+
+# Lista dos containers (serviços) que este compose vai criar
+services:
+  # ---------------- BANCO DE DADOS ----------------
+  # Nome do serviço; também vira o "hostname" dele dentro da rede do compose
+  postgres:
+    # Imagem oficial do PostgreSQL, versão 16, na variante alpine (Linux mínimo, imagem menor)
+    image: postgres:16-alpine
+    # Reinicia sozinho se cair ou se o Docker reiniciar, a menos que você tenha parado manualmente
+    restart: unless-stopped
+    # Variáveis de ambiente que a imagem do Postgres usa na PRIMEIRA inicialização
+    environment:
+      # Cria o usuário do banco com este nome (vem do .env)
+      POSTGRES_USER: ${DB_USER}
+      # Senha desse usuário (vem do .env)
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      # Cria um banco de dados com este nome (vem do .env)
+      POSTGRES_DB: ${DB_NAME}
+    # Pastas/arquivos do seu computador (ou volumes do Docker) montados dentro do container
+    volumes:
+      # Volume nomeado "pgdata" guarda os dados do banco; eles sobrevivem a "docker compose down"
+      - pgdata:/var/lib/postgresql/data
+      # scripts nesta pasta rodam UMA vez, só quando o volume está vazio
+      # Monta o .sql do drawSQL como 01-schema.sql (cria as tabelas); ":ro" = somente leitura
+      - ./src/database/drawSQL-pgsql-export-2026-07-21.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+    # Publica portas do container no seu computador ("ip:porta_no_pc:porta_no_container")
+    ports:
+      # Porta 5434 do PC -> 5432 do container; 127.0.0.1 = só acessível pela sua máquina
+      - "127.0.0.1:5434:5432" # opcional: acessar o banco com DBeaver/pgAdmin
+    # Teste periódico que diz se o container está "saudável" (pronto para uso)
+    healthcheck:
+      # Comando do teste: pg_isready verifica se o Postgres já aceita conexões
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      # Roda o teste a cada 5 segundos
+      interval: 5s
+      # Se o teste demorar mais de 5 segundos, conta como falha
+      timeout: 5s
+      # Depois de 10 falhas seguidas, o container é marcado como "unhealthy"
+      retries: 10
+
+  # ---------------- API (Node.js) ----------------
+  # Nome do serviço da API
+  api:
+    # Em vez de baixar uma imagem pronta, constrói a imagem a partir do Dockerfile da pasta atual (.)
+    build: . # usa o Dockerfile deste repositório
+    # Mesmo comportamento de reinício do banco
+    restart: unless-stopped
+    # Variáveis de ambiente que a API vai enxergar em process.env
+    environment:
+      # o .env diz localhost:5434 (para o npm start); aqui sobrescrevemos:
+      DB_HOST: postgres # nome do serviço = endereço na rede do compose
+      DB_PORT: 5432 # porta INTERNA do container, não a 5434
+      # Usuário do banco (mesmo valor usado no serviço postgres)
+      DB_USER: ${DB_USER}
+      # Senha do banco (mesmo valor usado no serviço postgres)
+      DB_PASSWORD: ${DB_PASSWORD}
+      # Nome do banco (mesmo valor usado no serviço postgres)
+      DB_NAME: ${DB_NAME}
+      # Segredo usado para assinar/validar os tokens JWT (vem do .env)
+      JWT_SECRET: ${JWT_SECRET}
+      # Porta em que o Express vai escutar dentro do container
+      PORT: 8888
+    # Publica a porta da API no seu computador
+    ports:
+      # Porta 8888 do PC -> 8888 do container (acesse em http://localhost:8888)
+      - "8888:8888"
+    # Define a ordem de inicialização: a API depende do banco
+    depends_on:
+      # Nome do serviço do qual a API depende
+      postgres:
+        condition: service_healthy # espera o banco aceitar conexões
+    # Configurações usadas só em desenvolvimento
+    develop:
+      # docker compose watch -> sincroniza o src e reinicia a API a cada alteração
+      watch:
+        # Ao alterar algo em ./src: copia para o container e reinicia a API (sem rebuild)
+        - action: sync+restart
+          # Pasta observada no seu computador
+          path: ./src
+          # Para onde os arquivos são copiados dentro do container
+          target: /app/src
+        # Ao alterar o package.json (ex.: nova dependência): reconstrói a imagem inteira
+        - action: rebuild
+          # Arquivo observado
+          path: ./package.json
+
+# Declaração dos volumes nomeados usados acima
+volumes:
+  # Volume onde o Postgres guarda os dados (gerenciado pelo Docker)
+  pgdata:

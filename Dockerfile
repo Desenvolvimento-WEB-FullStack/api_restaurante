@@ -1,37 +1,31 @@
-# Usa a imagem oficial do Node 22 (variante bookworm-slim, mais leve) como base e nomeia esse estágio de "builder"
-FROM node:22-bookworm-slim AS builder
+# v6 — pronta para produção: multi-stage + usuário sem root + healthcheck
+# ---------- estágio 1: instala dependências ----------
+FROM node:22-alpine AS deps
 
-# Define /app como diretório de trabalho dentro do container (comandos seguintes rodam a partir daqui)
 WORKDIR /app
 
-# python3/make/g++ são necessários para compilar o bcrypt caso não haja
-# binário pré-compilado para esta combinação exata de node/plataforma.
-RUN apt-get update \
-    # Instala os pacotes python3, make e g++ sem pacotes recomendados extras (imagem menor)
-    && apt-get install -y --no-install-recommends python3 make g++ \
-    # Remove a lista de pacotes do apt para reduzir o tamanho final da imagem
-    && rm -rf /var/lib/apt/lists/*
-
-# Copia package.json e package-lock.json do host para o diretório de trabalho no container
 COPY package.json package-lock.json ./
-# Instala as dependências de forma limpa e reprodutível (usando o lock file), ignorando devDependencies
 RUN npm ci --omit=dev
 
-# Inicia um novo estágio de build a partir da mesma imagem base do Node (imagem final, sem as libs de build)
-FROM node:22-bookworm-slim
+# ---------- estágio 2: imagem final ----------
+FROM node:22-alpine
 
-# Define /app como diretório de trabalho neste novo estágio
+ENV NODE_ENV=production
+
 WORKDIR /app
 
-# Copia apenas a pasta node_modules já instalada do estágio "builder" (evita reinstalar dependências e reduz o tamanho da imagem)
-COPY --from=builder /app/node_modules ./node_modules
-# Copia o package.json para a imagem final
-COPY package.json ./
-# Copia o código-fonte da aplicação (pasta src) para a imagem final
-COPY src ./src
+# --chown: os arquivos pertencem ao usuário "node" (já existe na imagem oficial)
+COPY --from=deps --chown=node:node /app/node_modules ./node_modules
+COPY --chown=node:node package.json ./
+COPY --chown=node:node src ./src
 
-# Documenta que o container escuta na porta 8888 (não publica a porta sozinho, apenas informativo)
+# não roda como root: se alguém invadir a app, não é root no container
+USER node
+
 EXPOSE 8888
 
-# Define o comando padrão executado quando o container é iniciado: roda a aplicação com node
+# o Docker testa a cada 30s se a API responde (qualquer resposta HTTP = viva)
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD node -e "fetch('http://localhost:8888').then(() => process.exit(0)).catch(() => process.exit(1))"
+
 CMD ["node", "src/index.js"]
